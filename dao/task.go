@@ -1,9 +1,15 @@
 package dao
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type Task struct {
-	gorm.Model
-	Content *string
-	Status  int
+	ID        uint `json:"id"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+	Content   *string        `json:"content"`
+	Status    int            `json:"status"`
 }
