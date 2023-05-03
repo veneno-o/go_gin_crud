@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"go_gin/dao"
 	"gorm.io/gorm"
@@ -18,7 +19,7 @@ func main() {
 
 	routerGroup := ginServe.Group("/")
 	{
-		//获取一个任务OK
+		//查询
 		routerGroup.GET("/", func(ctx *gin.Context) {
 			var task []dao.Task
 
@@ -60,10 +61,13 @@ func main() {
 			})
 		})
 
-		//提交一个任务OK
-		routerGroup.POST("/:content", func(ctx *gin.Context) {
-			content := ctx.Param("content")
-			task := dao.Task{Content: &content}
+		//添加
+		routerGroup.POST("/", func(ctx *gin.Context) {
+			var data_ map[string]string
+			data, _ := ctx.GetRawData()
+			json.Unmarshal(data, &data_)
+			content_ := data_["content"]
+			task := dao.Task{Content: &content_}
 			DB.Debug().Create(&task)
 			ctx.JSON(http.StatusOK, gin.H{
 				"code": 2000,
@@ -72,10 +76,14 @@ func main() {
 			})
 		})
 
-		//修改一个任务(修改任务状态)
-		routerGroup.PUT("/:id/:state", func(ctx *gin.Context) {
+		//修改
+		routerGroup.PUT("/:id", func(ctx *gin.Context) {
 			var task dao.Task
-			state := ctx.Param("state")
+			var body map[string]int
+
+			bytes, _ := ctx.GetRawData()
+			json.Unmarshal(bytes, &body)
+			state := body["state"]
 			id := ctx.Param("id")
 			//1.查询
 			tx := DB.Debug().First(&task, id)
@@ -97,7 +105,7 @@ func main() {
 			})
 		})
 
-		//删除一个任务
+		//删除
 		routerGroup.DELETE("/:id", func(ctx *gin.Context) {
 			var task dao.Task
 			id := ctx.Param("id")
