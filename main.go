@@ -6,6 +6,7 @@ import (
 	"go_gin/dao"
 	"gorm.io/gorm"
 	"net/http"
+	"os"
 )
 
 var DB *gorm.DB
@@ -15,9 +16,18 @@ func init() {
 }
 
 func main() {
+	root, _ := os.Getwd()
 	ginServe := gin.Default()
+	ginServe.Static("/css", root+"/static/css")
+	ginServe.Static("/fonts", root+"/static/fonts")
+	ginServe.Static("/js", root+"/static/js")
 
-	routerGroup := ginServe.Group("/")
+	ginServe.LoadHTMLGlob("templates/*")
+
+	ginServe.GET("/", func(ctx *gin.Context) {
+		ctx.HTML(http.StatusOK, "index.html", nil)
+	})
+	routerGroup := ginServe.Group("/api")
 	{
 		//查询
 		routerGroup.GET("/", func(ctx *gin.Context) {
@@ -80,7 +90,7 @@ func main() {
 		routerGroup.PUT("/:id", func(ctx *gin.Context) {
 			var task dao.Task
 			var body map[string]int
-
+			//ctx.BindJSON(&task)
 			bytes, _ := ctx.GetRawData()
 			json.Unmarshal(bytes, &body)
 			state := body["state"]
@@ -123,7 +133,7 @@ func main() {
 	}
 
 	ginServe.NoRoute(func(ctx *gin.Context) {
-		ctx.HTML(http.StatusNotFound, "/templates/404.html", gin.H{})
+		ctx.HTML(http.StatusNotFound, "404.html", gin.H{})
 	})
 	ginServe.Run(":8000")
 }
