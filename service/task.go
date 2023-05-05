@@ -14,7 +14,7 @@ func GetPageHandler(ctx *gin.Context) {
 
 // GetAllTaskHandler get all task data
 func GetAllTaskHandler(ctx *gin.Context) {
-	var task dao.Task
+	var task []dao.Task
 	tx := dao.DB.Debug().Find(&task)
 	if tx.RowsAffected == 0 {
 		ctx.JSON(http.StatusOK, gin.H{
